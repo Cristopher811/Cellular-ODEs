@@ -1,4 +1,4 @@
-double *Ri(double *x, int N)
+*Ri(double *x, int N)
 {
 //x: Concentrations vector
 //N: Number of nodes
