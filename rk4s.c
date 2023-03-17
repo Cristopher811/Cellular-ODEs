@@ -4,15 +4,16 @@
 
 #define NVARS 3
 
-double rhs1(double t, double *x, int N){
+double rhs1(double t, double *x, int i){
 
   double result;
 
-  switch(N){
+  switch(i){
     case 0: result = 0-x[2]*x[0]-x[1]*x[0]-x[2]*x[0]+4.000000*x[2]*(0.200000-x[0]); break;
-    case 1: result = 0-x[2]*x[1]-x[5]*x[0]-x[2]*x[1]+4.000000*x[2]*(0.200000-x[1]); break;
-    case 2: result = 0-x[2]*x[1]-x[2]*x[0]-x[1]+4.000000*x[6]*(0.200000-x[2]); break;
+    case 1: result = 0-x[1]*x[1]-x[1]*x[1]-x[2]*x[1]+4.000000*x[2]*(0.200000-x[1]); break;
+    case 2: result = 0-x[2]*x[1]-x[2]*x[0]-x[1]+4.000000*x[0]*(0.200000-x[2]); break;
   }
+  printf("\t%lf\t%lf\t%lf\t\n",x[0],x[1],x[2]);
   return result;
 }
 
@@ -74,8 +75,8 @@ void rk4system(double (*f)(double ,double* ,int), double t, double *var, double 
   int i;
 
   for (i=0;i<NVARS; i++) tvar1[i]=var[i]+0.5*(k1[i]=step*(*f)(t, var, i));
-  for (i=0;i<NVARS; i++) tvar2[i]=var[i]+0.5*(k1[i]=step*(*f)(t, tvar1, i));
-  for (i=0;i<NVARS; i++) tvar3[i]=var[i]+0.5*(k1[i]=step*(*f)(t, tvar2, i));
+  for (i=0;i<NVARS; i++) tvar2[i]=var[i]+0.5*(k2[i]=step*(*f)(t, tvar1, i));
+  for (i=0;i<NVARS; i++) tvar3[i]=var[i]+0.5*(k3[i]=step*(*f)(t, tvar2, i));
   for (i=0;i<NVARS; i++) k4[i]=step*(*f)(t+step,tvar3,i);
   for (i=0;i<NVARS; i++) var[i]+=(k1[i]+2*k2[i]+2*k3[i]+k4[i])/6.0;
 }
@@ -101,11 +102,14 @@ int main (int argc, char *argv[])
   y[0] = x0;
   y[1] = x0;
   y[2] = x0;
+
+  printf("\t%lf\t%lf\t%lf\n", y[0],y[1],y[2]);
+
   
   for(i=0;i<n;i++){
     tmp = t0+i*h;
     rk4system(rhs1,tmp,y,h);
-    printf("%lf\t%lf\t%lf\t%lf\n", tmp, y[0],y[1],y[2]);
+    printf("\t%lf\t%lf\t%lf\t%lf\n", tmp, y[0],y[1],y[2]);
   }
   return 0;
 }
