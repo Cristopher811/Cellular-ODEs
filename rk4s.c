@@ -13,7 +13,7 @@ double rhs1(double t, double *x, int i){
     case 1: result = 0-x[1]*x[1]-x[1]*x[1]-x[2]*x[1]+4.000000*x[2]*(0.200000-x[1]); break;
     case 2: result = 0-x[2]*x[1]-x[2]*x[0]-x[1]+4.000000*x[0]*(0.200000-x[2]); break;
   }
-  printf("\t%lf\t%lf\t%lf\t\n",x[0],x[1],x[2]);
+  //printf("\t%lf\t%lf\t%lf\t\n",x[0],x[1],x[2]);
   return result;
 }
 
@@ -84,7 +84,6 @@ void rk4system(double (*f)(double ,double* ,int), double t, double *var, double 
 int main (int argc, char *argv[])
 {
   double t0,x0,tn,h,xn;
-  double (*f)(double,double);
   double *y,tmp;
   int i, n, v;
 
@@ -103,13 +102,13 @@ int main (int argc, char *argv[])
   y[1] = x0;
   y[2] = x0;
 
-  printf("\t%lf\t%lf\t%lf\n", y[0],y[1],y[2]);
+  //printf("\t%lf\t%lf\t%lf\n", y[0],y[1],y[2]);
 
   
   for(i=0;i<n;i++){
     tmp = t0+i*h;
     rk4system(rhs1,tmp,y,h);
-    printf("\t%lf\t%lf\t%lf\t%lf\n", tmp, y[0],y[1],y[2]);
+    printf("\t%lf\t%lf\t%lf\t%lf\t\n", tmp, y[0],y[1],y[2]);
   }
   return 0;
 }
