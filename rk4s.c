@@ -2,16 +2,16 @@
 #include <math.h>
 #include <stdlib.h>
 
-#define NVARS 250
+#define NVARS 3
 
 double rhs1(double t, double *x, int N){
 
   double result;
 
   switch(N){
-    case 0: result = 0-x[0]*x[1]; break;
-    case 1: result = 0-x[1]*x[2]; break;
-    case 2: result = 0-x[2]*x[0]; break;
+    case 0: result = 0-x[2]*x[0]-x[1]*x[0]-x[2]*x[0]+4.000000*x[2]*(0.200000-x[0]); break;
+    case 1: result = 0-x[2]*x[1]-x[5]*x[0]-x[2]*x[1]+4.000000*x[2]*(0.200000-x[1]); break;
+    case 2: result = 0-x[2]*x[1]-x[2]*x[0]-x[1]+4.000000*x[6]*(0.200000-x[2]); break;
   }
   return result;
 }
@@ -98,12 +98,14 @@ int main (int argc, char *argv[])
 
   y = (double *)malloc(NVARS*sizeof(double));
 
-  y[i] = x0;
+  y[0] = x0;
+  y[1] = x0;
+  y[2] = x0;
   
   for(i=0;i<n;i++){
     tmp = t0+i*h;
     rk4system(rhs1,tmp,y,h);
-    printf("%lf\t%lf\n", tmp, y[i]);
+    printf("%lf\t%lf\t%lf\t%lf\n", tmp, y[0],y[1],y[2]);
   }
   return 0;
 }
