@@ -182,7 +182,7 @@ int main (int argc, char *argv[])
 
     case 5:
     y = (double *)malloc(NVARS*sizeof(double)); //dy/dx
-
+      
       y[0] = x0;
       if(x0)
         y[1] = 0.0;
@@ -193,6 +193,7 @@ int main (int argc, char *argv[])
         tmp = t0 + i*h;
         rk4sys(ho, tmp, y, h); // (ho:=rhs, tmp:=final time, y:lhs, h:step)
         printf("%lf\t%lf\t%lf\n", tmp, y[0], y[1]);
+        printf("%lu", sizeof(y));
       }
     break;
   }
