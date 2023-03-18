@@ -12,7 +12,7 @@ double line(double t, double x)
 
   m = 1;
   b = 0;
-  result = m*x + b; // result := function
+  result = m*x + b;
 
   return result;
 }
@@ -42,11 +42,12 @@ double rhs2(double t, double x)
 
 double ho(double t, double *x, int i)
 {
-  double result; //result := function
+  double result;
 
   switch (i) {
-    case 0: result = x[1]; break; // \dot{x} = y
-    case 1: result = -x[0]; break; // \dot{y} = -x
+    case 0: result = x[1]; break;
+    case 1: result = -x[0]; break;
+  
   }
   return result;
 }
@@ -132,7 +133,8 @@ void rk4sys (double (*f)(double, double*,int), double t, double *var, double ste
   int i;
 
   for (i=0; i<NVARS; i++) {
-    tvar1[i]=var[i]+0.5*(k1[i]=step*(*f)(t,var,i));
+    k1[i]=step*(*f)(t,var,i);
+    tvar1[i]=var[i]+0.5*k1[i];
   }
   for (i=0; i<NVARS; i++) {
     tvar2[i]=var[i]+0.5*(k2[i]=step*(*f)(t+h,tvar1,i));
@@ -156,19 +158,19 @@ int main (int argc, char *argv[])
   double *y, tmp;
   int i, n, ex, v;
 
-  sscanf(argv[1], "%d", &ex); //example 
-  sscanf(argv[2], "%lf", &t0); //initial time
-  sscanf(argv[3], "%lf", &x0); //initial value
-  sscanf(argv[4], "%lf", &tn); // final time
-  sscanf(argv[5], "%d", &n);  // number of steps
-  sscanf(argv[6], "%d", &v); // verbose 0,1
+  sscanf(argv[1], "%d", &ex);
+  sscanf(argv[2], "%lf", &t0);
+  sscanf(argv[3], "%lf", &x0);
+  sscanf(argv[4], "%lf", &tn);
+  sscanf(argv[5], "%d", &n);
+  sscanf(argv[6], "%d", &v);
 
   //Calculating step size (h)
   h = (tn - t0)/n;
 
   switch (ex) {
     case 1:
-    f = line;//2.71828182846
+    f=line;//2.71828182846
     break;
     case 2:
     f = rhs0;
@@ -179,10 +181,9 @@ int main (int argc, char *argv[])
     case 4:
     f = rhs2;
     break;
-
     case 5:
-    y = (double *)malloc(NVARS*sizeof(double)); //dy/dx
-      
+    y = (double *) malloc(NVARS*sizeof(double));
+
       y[0] = x0;
       if(x0)
         y[1] = 0.0;
@@ -191,9 +192,8 @@ int main (int argc, char *argv[])
 
       for (i=0; i<n; i++) {
         tmp = t0 + i*h;
-        rk4sys(ho, tmp, y, h); // (ho:=rhs, tmp:=final time, y:lhs, h:step)
+        rk4sys(ho, tmp, y, h);
         printf("%lf\t%lf\t%lf\n", tmp, y[0], y[1]);
-        printf("%lu", sizeof(y));
       }
     break;
   }
@@ -208,5 +208,3 @@ int main (int argc, char *argv[])
   }
   return 0;
 }
-
-

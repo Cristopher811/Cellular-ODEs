@@ -1,114 +1,115 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
+#include "./Sources/rhs.h"
 
-#define NVARS 3
-
-double rhs1(double t, double *x, int i){
-
-  double result;
-
-  switch(i){
-    case 0: result = 0-x[2]*x[0]-x[1]*x[0]-x[2]*x[0]+4.000000*x[2]*(0.200000-x[0]); break;
-    case 1: result = 0-x[1]*x[1]-x[1]*x[1]-x[2]*x[1]+4.000000*x[2]*(0.200000-x[1]); break;
-    case 2: result = 0-x[2]*x[1]-x[2]*x[0]-x[1]+4.000000*x[0]*(0.200000-x[2]); break;
-  }
-  //printf("\t%lf\t%lf\t%lf\t\n",x[0],x[1],x[2]);
-  return result;
+int read_data_file(double *dataArray, FILE *file) {
+	char buffer[100] = {'\0'};
+	char *end = NULL;
+	char c = 0;
+	int i = 0;
+	do {
+		c = fgetc(file);
+		if (c == EOF || c == '\n') {
+			dataArray[i] = strtod(buffer, &end);
+			buffer[0] = '\0';
+			i++;
+		} else
+			strncat(buffer, &c, 1);
+	} while(c != EOF);
+	return 1;
 }
 
+void rhs1(double *x, double *res) {
+  double sum;
+  double rhs[NVARS];
 
-double rk4(double (*rhs)(double, double), double t0, double x0, double h, int n, int verbose){
-  double x1,f,k1,k2,k3,k4;
-  int i;
+  //r1(x,rhs);
+/*   printf("%lu\t%lu\t\n", rhs,x); //esto ok */
 
-  for (i = 1; i < n; i++) {
-    f = rhs(t0,x0);
-    k1 = h*f;
-    f = rhs(t0+0.5*h,x0+0.5*k1);
-    k2 = h*f;
-    f = rhs(t0+0.5*h,x0+0.5*k2);
-    k3 = h*f;
-    f = rhs(t0+h,x0+k3);
-    k4 = h*f;
-    x1 = x0 + (k1 + 2*k2 + 2*k3 + k4)/6;
+/*   for (int i = 0; i<NVARS; i++) { 
+    printf("%lf\t\n",x[i]); no ok -nan
+  } */
 
-    if (verbose) {
-      printf("\n\n k1 = %lf ", k1);
-      printf("\n\n k2 = %lf ", k2);
-      printf("\n\n k3 = %lf ", k3);
-      printf("\n\n k4 = %lf ", k4);
-      printf("\n\n x(%lf) = %lf\n ", t0+h,x1);
+
+
+  for(int i = 0; i<NVARS; i++){
+   res[i] = x[i]; 
+   rhs[i] = res[i];
+   sum += rhs[i];
+  }
+  
+  for(int i = 0; i<NVARS; i++){
+    //res[i] = x[i]; //checar *_*  CRIS RECUERDA QUE ESTO LO MODIFICASTE!!!!!
+    res[i] = rhs[i] - x[i]*sum;
+  }
+}
+
+void rk4sys(double *res, double t0, double *x0, double h, int n){
+  double f[NVARS], k[NVARS][4]; // f es la funcion evaluada en x0 en todo el sistema
+  double x[NVARS]; // Iniciales del rk sobre x
+  //
+  for(int i = 0; i < NVARS; i++){
+    x[i] = x0[i];
+    res[i] = x[i]; // checar *_* CRIS RECUERDA QUE ESTO LO MODIFICASTE!!!
+  }
+/*   printf("%lu", x0); */
+   for(int m = 0; m < n; m++) {
+    rhs1(x, f);
+    for (int i = 0; i < NVARS; i++) {
+      k[i][0] = h * f[i];
+      x[i] = x[i] + 0.5 * k[i][0];
     }
-    
-    x0 = x1;
-    t0 = t0+h;
+    // printf("%lf\t%lf\t%lf\n", f[0], f[1], f[2]);
+    rhs1(x, f);
+    for (int i = 0; i < NVARS; i++) {
+      k[i][1] = h * f[i];
+      x[i] = x[i] + 0.5 * k[i][1];
+    }
+    // printf("%lf\t%lf\t%lf\n", f[0], f[1], f[2]);
+    rhs1(x, f);
+    for (int i = 0; i < NVARS; i++) {
+      k[i][2] = h * f[i];
+      x[i] = x[i] + k[i][2];
+    }
+    // printf("%lf\t%lf\t%lf\n", f[0], f[1], f[2]);
+    rhs1(x, f);
+    for (int i = 0; i < NVARS; i++) {
+      k[i][3] = h * f[i];
+      res[i] = res[i] + (k[i][0] + 2*k[i][1] + + 2*k[i][2] + k[i][3])/6;
+      x[i] = res[i];
+      printf("%lf\t%d\t%lf\t\n", t0, i, x[i]);
+    }
+    t0 = t0 + h;
   }
-  return x1;
-}
+ }
 
+int main (int argc, char *argv[]) {
+  double x0[NVARS], t0, tf, h, n;
+  double results[NVARS];
 
-double rk4adpatative(double (*rhs)(double, double), double t0, double tf, double x0, double tol){
-  double x1, x1halfstep, h;
-  int i, n=1;
-
-  h = tf-t0;
-  x1 = rk4(rhs,t0,x0,h,n,0);
-  n *=2;
-  h *= 0.5;
-  x1halfstep = rk4(rhs,t0,x0,h,n,0);
-  
-  while (fabs(x1halfstep-x1)>tol) {
-    x1 = x1halfstep;
-    n *= 2;
-    h*= 0.5;
-    x1halfstep = rk4(rhs,t0,x0,h,n,0);
+	FILE *cellData = NULL;
+	// Abrimos y leemos el archivo
+	cellData = fopen("./Sources/x_0.dat", "r");
+	// Verificamos errores
+	if (cellData == NULL) {
+		fprintf(stderr, "Error al abrir el archivo x_0.dat");
+		exit(EXIT_FAILURE);
+	} 
+	read_data_file(x0, cellData);
+	fclose(cellData);
+	for (int i = 0; i < NVARS; i++){
+	//	printf("dx[%i]/dt = %lf\n", i, x0[i]);
   }
-  return x1halfstep;
-}
 
+/*   printf("%lu\t\n", &x0); */
+  t0 = 0;
+  tf = 10;
+  n = 50;
 
-void rk4system(double (*f)(double ,double* ,int), double t, double *var, double step){
-  double h = 0.5*step;
-  double tvar1[NVARS], tvar2[NVARS], tvar3[NVARS];
-  double k1[NVARS], k2[NVARS], k3[NVARS], k4[NVARS]; 
-  int i;
+  h = (tf - t0) / n;
 
-  for (i=0;i<NVARS; i++) tvar1[i]=var[i]+0.5*(k1[i]=step*(*f)(t, var, i));
-  for (i=0;i<NVARS; i++) tvar2[i]=var[i]+0.5*(k2[i]=step*(*f)(t, tvar1, i));
-  for (i=0;i<NVARS; i++) tvar3[i]=var[i]+0.5*(k3[i]=step*(*f)(t, tvar2, i));
-  for (i=0;i<NVARS; i++) k4[i]=step*(*f)(t+step,tvar3,i);
-  for (i=0;i<NVARS; i++) var[i]+=(k1[i]+2*k2[i]+2*k3[i]+k4[i])/6.0;
-}
-
-int main (int argc, char *argv[])
-{
-  double t0,x0,tn,h,xn;
-  double *y,tmp;
-  int i, n, v;
-
-  sscanf(argv[1], "%lf", &t0);
-  sscanf(argv[2], "%lf", &x0);
-  sscanf(argv[3], "%lf", &tn);
-  sscanf(argv[4], "%d", &n);
-  sscanf(argv[5], "%d", &v);
-
-  h = (tn - t0)/n;
-
-
-  y = (double *)malloc(NVARS*sizeof(double));
-
-  y[0] = x0;
-  y[1] = x0;
-  y[2] = x0;
-
-  //printf("\t%lf\t%lf\t%lf\n", y[0],y[1],y[2]);
-
-  
-  for(i=0;i<n;i++){
-    tmp = t0+i*h;
-    rk4system(rhs1,tmp,y,h);
-    printf("\t%lf\t%lf\t%lf\t%lf\t\n", tmp, y[0],y[1],y[2]);
-  }
+  rk4sys(results, t0, x0, h, n);
   return 0;
 }
