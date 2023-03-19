@@ -4,6 +4,8 @@
 #include <string.h>
 #include "./Sources/rhs.h"
 
+//IDEA, CHANGE THE ARGUMENT OF RHS1 IN ORDER TO BE ABLE TO USE T0 AS LIMIT OF INTEGRATION.
+
 int read_data_file(double *dataArray, FILE *file) {
 	char buffer[100] = {'\0'};
 	char *end = NULL;
@@ -35,14 +37,16 @@ void rhs1(double *x, double *res) {
 
 
   for(int i = 0; i<NVARS; i++){
-   res[i] = x[i]; 
-   rhs[i] = res[i];
-   sum += rhs[i];
+    res[i] = x[i]; 
+    rhs[i] = res[i];
+    sum += rhs[i];
+  /*   printf("SUM[%d]\t%lf\t\n\n", i , sum); */
   }
   
   for(int i = 0; i<NVARS; i++){
     //res[i] = x[i]; //checar *_*  CRIS RECUERDA QUE ESTO LO MODIFICASTE!!!!!
     res[i] = rhs[i] - x[i]*sum;
+/*     printf("RES\t%lf\n", res[i]); */
   }
 }
 
