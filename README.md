@@ -10,4 +10,4 @@ And then execute the output with
 
 $ ./main.out
 
-Remember to change the __n__ in rhs_n depending of the cell you want to model.
+Remember to change the __n__ in rhs_n depending of the cell you want to model. Have fun!
