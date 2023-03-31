@@ -1,6 +1,6 @@
-#CELLULAR ODE'S
+# CELLULAR ODE'S
 
-##How to compile?
+## How to compile?
 
 This program uses header files in order to improve efficiency, thus, be sure to be in the directory ./Project/, in there, write the next command: 
 
